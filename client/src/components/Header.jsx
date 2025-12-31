@@ -1,34 +1,33 @@
-import React, { useState } from "react";
-import { useAuthStore } from "../../store/authStore";
+import React, { useState } from "react"
+import { useAuthStore } from "../store/authStore"
 
 function Header() {
   // Zustand에서 상태와 액션 가져오기
-  const { user, login, logout, loading, error } = useAuthStore();
+  const { user, login, logout, loading, error } = useAuthStore()
 
   // 로컬 상태 (폼 입력용)
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    const result = await login(username, password);
+    e.preventDefault()
+    const result = await login(username, password)
 
     if (result?.success) {
-      setUsername("");
-      setPassword("");
+      setUsername("")
+      setPassword("")
     }
-
-  };
+  }
 
   const handleLogout = () => {
-    logout();
-  };
+    logout()
+  }
 
   return (
     <header className="header">
       <div className="container header-content">
         <div className="header-left">
-        <img src="/assets/img/image2.png" width="300" height="200"/>
+          <img src="/assets/img/image2.png" width="300" height="200" />
         </div>
 
         <div className="header-right">
@@ -67,7 +66,7 @@ function Header() {
         </div>
       </div>
     </header>
-  );
+  )
 }
 
-export default Header;
+export default Header
