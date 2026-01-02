@@ -1,13 +1,16 @@
 const mysql = require("mysql2/promise");
+require("dotenv").config();
 
 const pool = mysql.createPool({
-  host: "localhost",
-  port : 3307,
-  user: "root",
-  password: "1234",  // 본인 MySQL 비밀번호로 변경
-  database: "board_db",
+  host: process.env.MYSQL_HOST,
+  port: Number(process.env.MYSQL_PORT),
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DB,
+
   waitForConnections: true,
   connectionLimit: 10,
+  queueLimit: 0,
 });
 
 module.exports = pool;
