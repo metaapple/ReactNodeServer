@@ -186,25 +186,11 @@ docker compose up -d --build
 
 ---
 
-## ✅ 포함 기능 요약
+## ✅ 외부 db 데이터 세팅
+파일의 내용으로 db 및 테이블 생성
+* init.sql 
+  
+export 파일
+* board_db_users.sql
+* board_db_posts.sql
 
-* React / Node 분리 구조
-* 개발/배포 환경 완전 분리
-* MySQL / Redis 외부 Docker 연동
-* Nginx API 프록시
-* GitHub Actions 자동 배포
-
----
-
-## 📌 추천 확장
-
-* HTTPS (Let's Encrypt)
-* PM2 무중단 배포
-* docker-compose.prod.yml 분리
-* Redis Session / Cache 적용
-* Swagger API 문서
-
----
-
-💡 **실무에서 바로 사용 가능한 기본 템플릿**입니다.
-필요 시 구조 확장, 인증(JWT), 권한, CI/CD 고도화까지 지원 가능합니다.
