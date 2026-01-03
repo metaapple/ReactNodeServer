@@ -1,72 +1,86 @@
-import React, { useState } from "react"
-import { useAuthStore } from "../store/authStore"
+import styled from "@emotion/styled";
+import { NavLink } from "react-router-dom";
 
-function Header() {
-  // Zustand에서 상태와 액션 가져오기
-  const { user, login, logout, loading, error } = useAuthStore()
-
-  // 로컬 상태 (폼 입력용)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    const result = await login(username, password)
-
-    if (result?.success) {
-      setUsername("")
-      setPassword("")
-    }
-  }
-
-  const handleLogout = () => {
-    logout()
-  }
-
+export default function Header() {
   return (
-    <header className="header">
-      <div className="container header-content">
-        <div className="header-left">
-          <img src="/assets/img/image2.png" width="300" height="200" />
-        </div>
-
-        <div className="header-right">
-          {user ? (
-            <div className="user-info">
-              <strong>{user.username}</strong>님 환영합니다!
-              <button onClick={handleLogout} className="btn-logout">
-                로그아웃
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleLogin} className="login-form">
-              <input
-                type="text"
-                placeholder="아이디"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={loading}
-              />
-              <input
-                type="password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-              <button type="submit" disabled={loading}>
-                {loading ? "로그인 중..." : "로그인"}
-              </button>
-            </form>
-          )}
-
-          {error && <p className="login-error">{error}</p>}
-        </div>
-      </div>
-    </header>
-  )
+    <HeaderWrapper>
+      <NavWrap>
+        <img src="assets/img/sai.PNG" />
+        <NavButton to="/about">About us</NavButton>
+        <NavButton to="/trend">취업 트렌드</NavButton>
+        <NavButton to="/resume">서류 분석</NavButton>
+        <NavButton to="/question">예상 질문</NavButton>
+        <NavButton to="/custom">맞춤 채용</NavButton>
+        <NavButton to="/chat">면접 챗봇</NavButton>
+      </NavWrap>
+      <LogoutWrap>
+        <User>000 님</User>
+        <Button type="submit">LOGOUT</Button>
+      </LogoutWrap>
+    </HeaderWrapper>
+  );
 }
 
-export default Header
+const HeaderWrapper = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  width: 100%;
+  height: 80px;
+  display: flex;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+`;
+const NavWrap = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
+  }
+`;
+const NavButton = styled(NavLink)`
+  margin-left: 1.8em;
+  text-decoration: none;
+  color: #333;
+  padding-bottom: 6px;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  &.active {
+    color: var(--strawberry-color);
+    border-bottom: 2px solid var(--strawberry-color);
+  }
+`;
+const LogoutWrap = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+const User = styled.div`
+  width: 100%;
+  margin-right: 1.8em;
+`;
+const Button = styled.button`
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: var(--strawberry-color);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  margin-right: 1.8em;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
