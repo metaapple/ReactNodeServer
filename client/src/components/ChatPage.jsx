@@ -110,6 +110,7 @@ const LeftWrap = styled.div`
 const Title = styled.h1`
   margin-bottom: 1.5em;
   text-align: center;
+  font-weight: 600;
 `;
 const Highlight = styled.span`
   color: var(--strawberry-color);
