@@ -1,7 +1,14 @@
 import styled from "@emotion/styled";
 import { NavLink } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
 export default function Header() {
+  const { user, logout, loading } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <HeaderWrapper>
       <NavWrap>
@@ -13,10 +20,15 @@ export default function Header() {
         <NavButton to="/custom">맞춤 채용</NavButton>
         <NavButton to="/chat">면접 챗봇</NavButton>
       </NavWrap>
-      <LogoutWrap>
-        <User>000 님</User>
-        <Button type="submit">LOGOUT</Button>
-      </LogoutWrap>
+
+      {user && (
+        <LogoutWrap>
+          <User>{user.name ?? user.username ?? "사용자"}님</User>
+          <Button type="submit" onClick={handleLogout} disabled={loading}>
+            {loading ? "..." : "LOGOUT"}
+          </Button>
+        </LogoutWrap>
+      )}
     </HeaderWrapper>
   );
 }

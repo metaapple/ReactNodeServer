@@ -1,15 +1,32 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
+import { useNavigate } from "react-router-dom";
 
 export default function Main() {
-  const [id, setId] = useState("");
-  const [pw, setPw] = useState("");
+  const { user, login, logout, loading, error } = useAuthStore();
 
-  const handleSubmit = (e) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(id, pw);
+    const result = await login(username, password);
+
+    if (result?.success) {
+      setUsername("");
+      setPassword("");
+      navigate("/about");
+    }
   };
+
+  useEffect(() => {
+    if (user) {
+      navigate("/about");
+    }
+  }, [user, navigate]);
 
   return (
     <Container>
@@ -29,17 +46,21 @@ export default function Main() {
                 <Input
                   type="text"
                   placeholder="ID"
-                  value={id}
-                  onChange={(e) => setId(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
                 <Input
                   type="password"
                   placeholder="PW"
-                  value={pw}
-                  onChange={(e) => setPw(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </InputWrap>
-              <Button type="submit">LOGIN</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "로그인중..." : "LOGIN"}
+              </Button>
+
+              {error && <ErrorText>{error}</ErrorText>}
             </Form>
             <JoinBox onClick={() => alert("지금은 회원가입 기간이 아닙니다.")}>
               회원가입

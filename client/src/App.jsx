@@ -1,4 +1,5 @@
 import React from "react";
+import RequireAuth from "./components/RequireAuth";
 import { Routes, Route } from "react-router-dom";
 import styled from "@emotion/styled";
 import Header from "./components/Header";
@@ -19,12 +20,54 @@ function App() {
       <RoutesWrapper>
         <Routes>
           <Route path="/" element={<Main />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/trend" element={<TrendPage />} />
-          <Route path="/resume" element={<ResumePage />} />
-          <Route path="/question" element={<QuestionPage />} />
-          <Route path="/custom" element={<CustomPage />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route
+            path="/about"
+            element={
+              <RequireAuth>
+                <AboutPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/trend"
+            element={
+              <RequireAuth>
+                <TrendPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/resume"
+            element={
+              <RequireAuth>
+                <ResumePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/question"
+            element={
+              <RequireAuth>
+                <QuestionPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/custom"
+            element={
+              <RequireAuth>
+                <CustomPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <RequireAuth>
+                <ChatPage />
+              </RequireAuth>
+            }
+          />
         </Routes>
       </RoutesWrapper>
       <Footer />
