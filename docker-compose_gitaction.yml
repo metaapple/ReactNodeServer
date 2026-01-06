@@ -2,26 +2,24 @@ version: "3.9"
 
 services:
   node:
-    build: ./server
+    image: vawing21/node:latest
     env_file:
       - ./server/.env
+    restart: always
     networks:
       - backend
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   nginx:
-    build: ./client
+    image: vawing21/nginx:latest
     ports:
       - "80:80"
     depends_on:
       - node
+    restart: always
     networks:
       - backend
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
 networks:
   backend:
-    driver: bridge
+    external: true
 

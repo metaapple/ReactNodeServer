@@ -70,12 +70,14 @@ project-root/
 
 ```env
 VITE_API_URL=http://localhost:3000
+VITE_AI_URL=http://localhost:3333
 ```
 
 #### `.env.production`
 
 ```env
 VITE_API_URL=/api
+VITE_AI_URL=/ai
 ```
 
 > 개발 환경에서는 Node 서버에 직접 접근하고,
