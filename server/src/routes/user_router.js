@@ -23,7 +23,9 @@ router.post("/login", async (req, res) => {
     const user = await findUserByCredentials(username, password);
 
     if (!user) {
-      return res.status(401).json({ error: "아이디 또는 비밀번호가 일치하지 않습니다." });
+      return res
+        .status(401)
+        .json({ error: "아이디 또는 비밀번호가 일치하지 않습니다." });
     }
 
     // 세션 저장
@@ -75,7 +77,7 @@ router.post("/logout", (req, res) => {
     }
 
     res.clearCookie("connect.sid"); // 기본 세션 쿠키 이름
-    return res.json({ success: true, message: "로그아웃 되었습니다." });
+    return res.json({ success: true });
   });
 });
 

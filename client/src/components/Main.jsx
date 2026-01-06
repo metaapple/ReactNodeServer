@@ -153,7 +153,7 @@ const Button = styled.button`
     opacity: 0.9;
   }
 `;
-
+const ErrorText = styled.div``;
 const JoinBox = styled.div`
   font-size: 0.7em;
   cursor: pointer;

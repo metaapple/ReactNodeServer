@@ -17,14 +17,11 @@ export const useAuthStore = create((set) => ({
       const res = await axios.get(`${API_URL}/users/me`, {
         withCredentials: true,
       });
-
-      // ✅ user 형태만 인정 (없으면 null)
-      const user = res.data?.user ?? null;
-
-      set({ user, hasCheckedAuth: true, error: null });
-      return { success: !!user, data: res.data };
+      set({ user: res.data?.user ?? null, hasCheckedAuth: true, error: null });
+      return { success: !!res.data?.user };
     } catch (e) {
-      set({ user: null, hasCheckedAuth: true });
+      // 401 포함: 그냥 로그인 안 된 상태로 처리
+      set({ user: null, hasCheckedAuth: true, error: null });
       return { success: false };
     }
   },
@@ -60,12 +57,15 @@ export const useAuthStore = create((set) => ({
   logout: async () => {
     set({ loading: true, error: null });
     try {
-      // 현재 백엔드에는 /users/logout 미구현 → 호출해도 의미 없음
-      // await axios.post(`${API_URL}/users/logout`, {}, { withCredentials: true });
+      await axios.post(
+        `${API_URL}/users/logout`,
+        {},
+        { withCredentials: true }
+      );
     } catch (e) {
-      // 무시
+      // 실패해도 프론트는 일단 로그아웃 처리
     } finally {
-      set({ user: null, loading: false, error: null });
+      set({ user: null, loading: false, error: null, hasCheckedAuth: true });
     }
   },
 }));
