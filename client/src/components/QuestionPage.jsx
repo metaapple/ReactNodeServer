@@ -185,7 +185,7 @@ export default function QuestionPage() {
 const Page = styled.div`
   width: 100%;
   min-height: 100vh;
-  background: White; /* 이미지처럼 연한 핑크 */
+  background: White;
   padding: 24px 14px;
 `
 
@@ -312,7 +312,7 @@ const Textarea = styled.textarea`
   padding: 12px;
   border-radius: 12px;
   border: none;
-  background: #f3f3f3; /* 이미지처럼 큰 회색 입력창 */
+  background: #f3f3f3;
   resize: none;
   font-size: 14px;
   line-height: 1.5;
