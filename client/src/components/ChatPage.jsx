@@ -62,15 +62,6 @@ export default function ChatPage() {
                 파일 선택
               </UploadButton>
             </FileWrap>
-            <ListWrap>
-              <ListLabel>면접 강도</ListLabel>
-              <Select value={level} onChange={(e) => setLevel(e.target.value)}>
-                <option value="">선택하세요</option>
-                <option value="weak">약하게</option>
-                <option value="normal">보통</option>
-                <option value="strong">강하게</option>
-              </Select>
-            </ListWrap>
             <BtnWrap>
               <StartButton>면접 시작</StartButton>
               <FinishButton>면접 종료</FinishButton>
@@ -174,42 +165,12 @@ const UploadButton = styled.button`
     opacity: 0.9;
   }
 `;
-const ListWrap = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  margin-bottom: 50px;
-`;
 
-const ListLabel = styled.label`
-  flex: 2;
-  width: 100%;
-  font-size: 14px;
-  color: #555;
-`;
-
-const Select = styled.select`
-  flex: 8;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-  color: #555;
-  background-color: white;
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-    border-color: var(--strawberry-color);
-  }
-`;
 const BtnWrap = styled.div`
   display: flex;
   justify-content: center;
   gap: 2em;
+  margin-top: 3em;
 `;
 const StartButton = styled.button`
   width: 100%;
