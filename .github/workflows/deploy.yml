@@ -29,4 +29,4 @@ jobs:
           script: |
             docker pull vawing21/node
             docker pull vawing21/nginx
-            docker-compose up -d
+            docker-compose up -d --pull always
