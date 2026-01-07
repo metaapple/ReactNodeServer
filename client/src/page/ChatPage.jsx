@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useRef, useState } from "react";
-import Chatbot from "./Chatbot";
+import Chatbot from "../components/Chatbot";
 import { startInterview } from "../api/chat";
 
 export default function ChatPage() {
