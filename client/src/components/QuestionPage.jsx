@@ -16,6 +16,11 @@ export default function QuestionPage() {
   // 자기소개서 텍스트 입력
   const [resume, setResume] = useState("")
 
+  // ✅ 업로드 상태/결과
+  const [uploadLoading, setUploadLoading] = useState(false)
+  const [uploadError, setUploadError] = useState("")
+  const [uploadedId, setUploadedId] = useState(null)
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -41,6 +46,43 @@ export default function QuestionPage() {
 
     fetchJobs()
   }, [])
+
+  // ✅ 업로드 버튼 클릭 핸들러 (job_resume 테이블 INSERT)
+  const handleUpload = async () => {
+    try {
+      setUploadError("")
+      setUploadedId(null)
+
+      if (!job) return setUploadError("직무 역할을 선택해주세요.")
+      const text = resume.trim()
+      if (text.length < 200)
+        return setUploadError("자기소개서는 최소 200자 이상 입력해주세요.")
+      if (text.length > 4000)
+        return setUploadError("최대 4000자까지 입력 가능합니다.")
+
+      setUploadLoading(true)
+
+      const res = await fetch("http://localhost:3000/job-resumes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // 세션 쓰면 유지하는 게 안전
+        body: JSON.stringify({
+          jc_code: job,
+          jrs_text: text,
+          jrs_type: "text",
+        }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) return setUploadError(data?.error || "업로드 실패")
+
+      setUploadedId(data?.jrs_id ?? null)
+    } catch (e) {
+      setUploadError(e.message || "업로드 중 오류")
+    } finally {
+      setUploadLoading(false)
+    }
+  }
 
   return (
     <Page>
@@ -145,11 +187,32 @@ export default function QuestionPage() {
                 placeholder="여기에 자기소개서를 입력하세요."
                 value={resume}
                 onChange={(e) => setResume(e.target.value)}
+                disabled={uploadLoading}
               />
               <BottomRow>
                 <Count>{resume.length} / 4000</Count>
+
+                {/* ✅ 업로드 버튼에 onClick 연결 */}
+                <UploadButton
+                  type="button"
+                  onClick={handleUpload}
+                  disabled={uploadLoading}
+                >
+                  {uploadLoading ? "업로드 중..." : "업로드"}
+                </UploadButton>
                 <PrimaryButton type="button">분석 시작</PrimaryButton>
               </BottomRow>
+              {/* ✅ 업로드 에러/성공 표시 */}
+              {uploadError && <ErrorText>{uploadError}</ErrorText>}
+              {uploadedId && (
+                <SuccessText>업로드 완료! (id: {uploadedId})</SuccessText>
+              )}
+              {uploadError && <ErrorText>{uploadError}</ErrorText>}
+              {uploadedId && (
+                <p style={{ marginTop: 8, fontSize: 12 }}>
+                  업로드 완료! id: {uploadedId}
+                </p>
+              )}
             </CardBody>
           </Card>
 
@@ -178,6 +241,12 @@ const ErrorText = styled.p`
   margin: 8px 0 0;
   font-size: 12px;
   color: #d63b52;
+`
+
+const SuccessText = styled.p`
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #1a7f37;
 `
 
 /* ---------------- styles ---------------- */
@@ -326,7 +395,6 @@ const Textarea = styled.textarea`
 const BottomRow = styled.div`
   margin-top: 12px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 12px;
 `
@@ -348,6 +416,27 @@ const PrimaryButton = styled.button`
 
   &:hover {
     opacity: 0.92;
+  }
+`
+
+const UploadButton = styled.button`
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--strawberry-color);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  margin-left: auto;
+
+  &:hover {
+    opacity: 0.92;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `
 
