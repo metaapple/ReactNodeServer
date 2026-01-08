@@ -1,5 +1,5 @@
-// CustomPage.jsx
-import { useId, useMemo, useState } from "react";
+fetch// CustomPage.jsx
+import { useEffect, useId, useMemo, useState } from "react";
 import styled from "@emotion/styled";
 
 const SAMPLE_JOBS = [
@@ -11,16 +11,7 @@ const SAMPLE_JOBS = [
     exp: "5년 이상",
     badges: ["BEST", "신규 공고"],
     skills: ["React", "TypeScript", "Node.js", "AWS"],
-  },
-  {
-    id: "job-2",
-    title: "백엔드 개발자",
-    company: "Strawberry AI",
-    location: "서울 성동구",
-    exp: "3년 이상",
-    badges: ["BEST"],
-    skills: ["Python", "FastAPI", "MySQL", "Redis"],
-  },
+  }
 ];
 
 function UploadBox({ fileName, onPick }) {
@@ -53,7 +44,9 @@ function UploadBox({ fileName, onPick }) {
   );
 }
 
-function FiltersBox({ value, onChange }) {
+function FiltersBox({ value, onChange, options, loading }) {
+  const rolesDisabled = !value.jc_code || loading;
+
   return (
     <Panel>
       <PanelTitle>
@@ -61,65 +54,88 @@ function FiltersBox({ value, onChange }) {
       </PanelTitle>
 
       <FiltersGrid>
+        {/* 직업별 */}
         <Select
-          value={value.jobGroup}
-          onChange={(e) => onChange({ ...value, jobGroup: e.target.value })}
-        >
-          <option value="">직업별</option>
-          <option value="dev">개발</option>
-          <option value="design">디자인</option>
-          <option value="pm">PM</option>
-        </Select>
-
-        <Select
-          value={value.role}
-          onChange={(e) => onChange({ ...value, role: e.target.value })}
-        >
-          <option value="">직무, 직업</option>
-          <option value="frontend">프론트엔드</option>
-          <option value="backend">백엔드</option>
-          <option value="data">데이터</option>
-        </Select>
-
-        <Select
-          value={value.employmentType}
+          value={value.jc_code}
           onChange={(e) =>
-            onChange({ ...value, employmentType: e.target.value })
+            onChange({
+              ...value,
+              jc_code: e.target.value,
+              jr_code: "",
+            })
           }
+          disabled={loading}
         >
-          <option value="">고용 형태</option>
-          <option value="fulltime">정규직</option>
-          <option value="contract">계약직</option>
-          <option value="intern">인턴</option>
+          <option value="">{loading ? "불러오는 중..." : "직업별"}</option>
+          {(options.categories || []).map((c) => (
+            <option key={c.jc_code} value={c.jc_code}>
+              {c.jc_name}
+            </option>
+          ))}
         </Select>
 
+        {/* 직무별 */}
         <Select
-          value={value.region}
-          onChange={(e) => onChange({ ...value, region: e.target.value })}
+          value={value.jr_code}
+          onChange={(e) => onChange({ ...value, jr_code: e.target.value })}
+          disabled={rolesDisabled}
         >
-          <option value="">지역</option>
-          <option value="seoul">서울</option>
-          <option value="gyeonggi">경기</option>
-          <option value="remote">원격</option>
+          <option value="">
+            {rolesDisabled ? "직업별 먼저 선택" : "직무별"}
+          </option>
+          {(options.roles || []).map((r) => (
+            <option key={r.jr_code} value={r.jr_code}>
+              {r.jr_name}
+            </option>
+          ))}
+        </Select>
+
+        {/* 고용 형태 */}
+        <Select
+          value={value.jp_employment_type}
+          onChange={(e) =>
+            onChange({ ...value, jp_employment_type: e.target.value })
+          }
+          disabled={loading}
+        >
+          <option value="">{loading ? "불러오는 중..." : "고용 형태"}</option>
+          {(options.employmentTypes || []).map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </Select>
+
+        {/* 지역 */}
+        <Select
+          value={value.jp_location}
+          onChange={(e) => onChange({ ...value, jp_location: e.target.value })}
+          disabled={loading}
+        >
+          <option value="">{loading ? "불러오는 중..." : "지역"}</option>
+          {(options.locations || []).map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
         </Select>
       </FiltersGrid>
     </Panel>
   );
 }
 
-function JobCard({ job, empty = false }) {
-  if (empty) {
-    return (
-      <JobCardWrap aria-hidden="true" data-empty="true">
-        <EmptyBox />
-      </JobCardWrap>
-    );
-  }
+function JobCard({ job }) {
+
+  const title = job.title ?? job.jp_title ?? job.job_title ?? "제목 없음";
+  const company = job.company ?? job.jp_company ?? job.company_name ?? "회사";
+  const location = job.location ?? job.jp_location ?? "지역";
+  const exp = job.exp ?? job.jp_exp ?? "경력";
+  const skills = job.skills ?? job.jp_skills ?? [];
 
   return (
     <JobCardWrap>
       <JobTop>
-        <JobTitle>{job.title}</JobTitle>
+        <JobTitle>{title}</JobTitle>
 
         <BadgeRow>
           {job.badges?.map((b) => (
@@ -130,24 +146,26 @@ function JobCard({ job, empty = false }) {
         </BadgeRow>
       </JobTop>
 
-      <Company>{job.company}</Company>
+      <Company>{company}</Company>
 
       <MetaList>
         <MetaLine>
           <MetaIcon aria-hidden="true">📍</MetaIcon>
-          <MetaText>{job.location}</MetaText>
+          <MetaText>{location}</MetaText>
         </MetaLine>
         <MetaLine>
           <MetaIcon aria-hidden="true">🗓️</MetaIcon>
-          <MetaText>{job.exp}</MetaText>
+          <MetaText>{exp}</MetaText>
         </MetaLine>
       </MetaList>
 
-      <SkillsRow>
-        {job.skills?.map((s) => (
-          <SkillChip key={s}>{s}</SkillChip>
-        ))}
-      </SkillsRow>
+      {Array.isArray(skills) && skills.length > 0 && (
+        <SkillsRow>
+          {skills.map((s) => (
+            <SkillChip key={s}>{s}</SkillChip>
+          ))}
+        </SkillsRow>
+      )}
 
       <CardActions>
         <DetailBtn type="button">상세보기</DetailBtn>
@@ -158,39 +176,163 @@ function JobCard({ job, empty = false }) {
 
 export default function CustomPage() {
   const [pickedFile, setPickedFile] = useState(null);
+
   const [filters, setFilters] = useState({
-    jobGroup: "",
-    role: "",
-    employmentType: "",
-    region: "",
+    jc_code: "",
+    jr_code: "",
+    jp_employment_type: "",
+    jp_location: "",
   });
 
+  const [options, setOptions] = useState({
+    categories: [],
+    roles: [],
+    employmentTypes: [],
+    locations: [],
+  });
+
+  const [optLoading, setOptLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const [jobs, setJobs] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const gridItems = useMemo(() => {
-    const base = [...jobs];
-    while (base.length < 6) base.push(null);
-    return base.slice(0, 6);
-  }, [jobs]);
+  const visibleJobs = useMemo(() => jobs.slice(0, 4), [jobs]);
+  const showResults = hasSearched;
 
+
+  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+
+  const fetchJson = async (path, init) => {
+    const res = await fetch(`${API_BASE}${path}`, {
+      credentials: "include",
+      ...init,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(text || `Request failed: ${res.status}`);
+    }
+    return res.json();
+  };
+
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadBaseOptions = async () => {
+      setOptLoading(true);
+      try {
+        const data = await fetchJson("/api/custom/jobs");
+        if (ignore) return;
+
+        setOptions({
+          categories: data.categories ?? [],
+          roles: data.roles ?? [],
+          employmentTypes: data.employmentTypes ?? [],
+          locations: data.locations ?? [],
+        });
+      } catch (e) {
+        console.error(e);
+        if (!ignore) {
+          setOptions((prev) => ({
+            ...prev,
+            roles: [],
+          }));
+        }
+      } finally {
+        if (!ignore) setOptLoading(false);
+      }
+    };
+
+    loadBaseOptions();
+
+    return () => {
+      ignore = true;
+    };
+
+  }, []);
+
+  //직업별
+  useEffect(() => {
+    let ignore = false;
+
+    const loadRoles = async () => {
+      if (!filters.jc_code) {
+        setOptions((prev) => ({ ...prev, roles: [] }));
+        return;
+      }
+
+      setOptLoading(true);
+      try {
+        const data = await fetchJson(
+          `/api/custom/jobs?jc_code=${encodeURIComponent(filters.jc_code)}`
+        );
+        if (ignore) return;
+
+        setOptions((prev) => ({
+          ...prev,
+          roles: data.roles ?? [],
+        }));
+      } catch (e) {
+        console.error(e);
+        if (!ignore) setOptions((prev) => ({ ...prev, roles: [] }));
+      } finally {
+        if (!ignore) setOptLoading(false);
+      }
+    };
+
+    loadRoles();
+
+    return () => {
+      ignore = true;
+    };
+  }, [filters.jc_code]);
+
+  //공고 찾기
   const onSearch = async () => {
     setHasSearched(true);
+
+
+    if (!pickedFile) {
+      alert("자기소개서를 업로드해 주세요.");
+      return;
+    }
+
+    if (!filters.jc_code) {
+      alert("직업별을 선택해 주세요.");
+      return;
+    }
+
     setIsLoading(true);
 
-    // TODO: API 연동 자리 (지금은 샘플)
-    await new Promise((r) => setTimeout(r, 600));
-    setJobs(SAMPLE_JOBS);
+    try {
+      const data = await fetchJson("/api/custom/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jc_code: filters.jc_code,
+          jr_code: filters.jr_code || null,
+          jp_employment_type: filters.jp_employment_type || null,
+          jp_location: filters.jp_location || null,
+        }),
+      });
 
-    setIsLoading(false);
+      setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+    } catch (e) {
+      console.error(e);
+
+
+      setJobs(SAMPLE_JOBS.slice(0, 4));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Wrap>
       <Container>
         <Title>
-          <b>자기소개서&이력서</b>를 업로드하여 <br />
+          <b>자기소개서</b>를 업로드하여 <br />
           자신에게 맞는 채용 공고를 찾아보세요!
         </Title>
 
@@ -201,37 +343,40 @@ export default function CustomPage() {
               onPick={(f) => setPickedFile(f)}
             />
             <Divider aria-hidden="true" />
-            <FiltersBox value={filters} onChange={setFilters} />
+            <FiltersBox
+              value={filters}
+              onChange={setFilters}
+              options={options}
+              loading={optLoading}
+            />
           </HeroCols>
 
           <CtaRow>
-            <CtaBtn type="button" onClick={onSearch}>
+            <CtaBtn type="button" onClick={onSearch} disabled={isLoading}>
               {isLoading ? "찾는 중..." : "공고 찾기"}
             </CtaBtn>
           </CtaRow>
         </HeroBox>
 
-        {hasSearched && (
+        {showResults && (
           <>
             <SectionDivider>
               <Line aria-hidden="true" />
               <DividerText>
-                이력서·자소서를 바탕으로 공고를 <b>매칭</b>했어요.
+                자기소개서·조건을 바탕으로 공고를 <b>매칭</b>했어요.
               </DividerText>
               <Line aria-hidden="true" />
             </SectionDivider>
 
-            <ResultsGrid aria-busy={isLoading}>
-              {gridItems.map((job, idx) =>
-                job ? (
-                  <JobCard key={job.id} job={job} />
-                ) : (
-                  <JobCard key={`empty-${idx}`} empty />
-                )
-              )}
-            </ResultsGrid>
-
-            {!isLoading && jobs.length === 0 && (
+            {isLoading ? (
+              <LoadingText>공고를 찾는 중이에요...</LoadingText>
+            ) : visibleJobs.length > 0 ? (
+              <ResultsGrid>
+                {visibleJobs.map((job) => (
+                  <JobCard key={job.id ?? job.jp_id ?? job.title} job={job} />
+                ))}
+              </ResultsGrid>
+            ) : (
               <EmptyText>조건을 바꿔서 다시 찾아보세요.</EmptyText>
             )}
           </>
@@ -241,10 +386,7 @@ export default function CustomPage() {
   );
 }
 
-/* =========================
-   Styles
-========================= */
-
+// ===================== CSS
 const Wrap = styled.main`
   width: 100%;
   padding: 20px 0 56px;
@@ -276,6 +418,7 @@ const HeroBox = styled.section`
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 26px 28px 22px;
+  margin-bottom: 100px;
 `;
 
 const HeroCols = styled.div`
@@ -400,6 +543,11 @@ const Select = styled.select`
     border-color: rgba(224, 82, 105, 0.6);
     box-shadow: 0 0 0 3px rgba(224, 82, 105, 0.12);
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const CtaRow = styled.div`
@@ -423,10 +571,15 @@ const CtaBtn = styled.button`
   &:hover {
     filter: brightness(0.98);
   }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 `;
 
 const SectionDivider = styled.div`
-  margin: 22px 0 16px;
+  margin: 22px 0 40px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 14px;
@@ -440,9 +593,10 @@ const Line = styled.div`
 
 const DividerText = styled.p`
   margin: 0;
-  font-size: 13px;
-  color: #374151;
-  letter-spacing: -0.1px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.15px;
 
   b {
     color: var(--strawberry-color);
@@ -453,24 +607,19 @@ const DividerText = styled.p`
 const ResultsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 14px;
 
   @media (max-width: 980px) {
     grid-template-columns: 1fr;
   }
 `;
 
-/* ===== 카드(스샷 스타일) ===== */
 const JobCardWrap = styled.article`
   border-radius: 12px;
   border: 2px solid rgba(224, 82, 105, 0.85);
   background: #ffffff;
   padding: 14px 14px 12px;
   min-height: 150px;
-
-  &[data-empty="true"] {
-    border-style: solid;
-  }
 `;
 
 const JobTop = styled.div`
@@ -590,19 +739,15 @@ const DetailBtn = styled.button`
   }
 `;
 
-/* empty */
-const EmptyBox = styled.div`
-  width: 100%;
-  height: 100%;
-  min-height: 120px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #ffffff, #fafafa, #ffffff);
-  border: 1px dashed rgba(224, 82, 105, 0.35);
-  opacity: 0.9;
+const LoadingText = styled.p`
+  margin: 18px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
 `;
 
 const EmptyText = styled.p`
-  margin: 14px 0 0;
+  margin: 18px 0 0;
   text-align: center;
   color: var(--muted);
   font-size: 13px;
