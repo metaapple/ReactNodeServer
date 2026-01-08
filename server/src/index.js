@@ -2,6 +2,7 @@ const cors = require("cors")
 const boardRouter = require("./routes/board_router")
 const userRouter = require("./routes/user_router")
 const jobCategoryRouter = require("./routes/question_router")
+const jobResumeRouter = require("./routes/job_resume_router")
 
 // app.js 또는 server.js
 const express = require("express")
@@ -45,6 +46,8 @@ app.use("/posts", boardRouter)
 app.use("/users", userRouter)
 // 직무 카테고리 API 라우터 연결
 app.use("/job-categories", jobCategoryRouter)
+// 자기소개서 업로드 API 라우터 연결
+app.use("/job-resumes", jobResumeRouter)
 
 // 기본 라우트
 app.get("/posts", (req, res) => {
