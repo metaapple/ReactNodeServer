@@ -66,7 +66,7 @@ function App() {
             }
           />
           <Route
-            path="/question"
+            path="/feedback"
             element={
               <RequireAuth>
                 <FeedbackPage />

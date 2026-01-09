@@ -16,7 +16,7 @@ export default function Header() {
         <NavButton to="/about">About us</NavButton>
         <NavButton to="/trend">취업 트렌드</NavButton>
         <NavButton to="/resume">서류 분석</NavButton>
-        <NavButton to="/question">서류 피드백</NavButton>
+        <NavButton to="/feedback">서류 피드백</NavButton>
         <NavButton to="/interview">예상 질문</NavButton>
         <NavButton to="/custom">맞춤 채용</NavButton>
         <NavButton to="/chat">면접 챗봇</NavButton>
