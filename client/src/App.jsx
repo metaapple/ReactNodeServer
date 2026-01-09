@@ -7,7 +7,7 @@ import Main from "./page/MainPage"
 import AboutPage from "./components/AboutPage"
 import TrendPage from "./page/TrendPage"
 import ResumePage from "./page/ResumePage"
-import QuestionPage from "./components/QuestionPage"
+import FeedbackPage from "./page/FeedbackPage"
 import CustomPage from "./components/CustomPage"
 import ChatPage from "./page/ChatPage"
 import InterviewPage from "./page/InterviewPage"
@@ -69,7 +69,7 @@ function App() {
             path="/question"
             element={
               <RequireAuth>
-                <QuestionPage />
+                <FeedbackPage />
               </RequireAuth>
             }
           />
