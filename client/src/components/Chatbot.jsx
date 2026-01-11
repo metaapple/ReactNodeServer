@@ -71,7 +71,7 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
     try {
       // ✅ 새 엔드포인트: POST /chat/message
       const data = await sendInterviewMessage({ sessionId, message: text });
-      console.log(data);
+      // console.log(data);
       const reply = (data?.answer ?? "").trim();
 
       // 3) typing bubble을 실제 답변으로 교체
