@@ -3,6 +3,7 @@ const boardRouter = require("./routes/board_router")
 const userRouter = require("./routes/user_router")
 const jobCategoryRouter = require("./routes/question_router")
 const jobResumeRouter = require("./routes/job_resume_router")
+const customRouter = require("./routes/custom_router");
 
 // app.js 또는 server.js
 const express = require("express")
@@ -48,6 +49,8 @@ app.use("/users", userRouter)
 app.use("/job-categories", jobCategoryRouter)
 // 자기소개서 업로드 API 라우터 연결
 app.use("/job-resumes", jobResumeRouter)
+// 맞춤채용 라우터 연결
+app.use("/api/custom", customRouter)
 
 // 기본 라우트
 app.get("/posts", (req, res) => {
