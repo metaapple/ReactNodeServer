@@ -1,4 +1,4 @@
-fetch// CustomPage.jsx
+// CustomPage.jsx
 import { useEffect, useId, useMemo, useState } from "react";
 import styled from "@emotion/styled";
 
@@ -11,7 +11,16 @@ const SAMPLE_JOBS = [
     exp: "5년 이상",
     badges: ["BEST", "신규 공고"],
     skills: ["React", "TypeScript", "Node.js", "AWS"],
-  }
+  },
+  {
+    id: "job-2",
+    title: "백엔드 개발자 (Node.js)",
+    company: "베네티브",
+    location: "서울 강남구",
+    exp: "3년 이상",
+    badges: ["신규 공고"],
+    skills: ["Node.js", "Express", "MySQL"],
+  },
 ];
 
 function UploadBox({ fileName, onPick }) {
@@ -125,7 +134,6 @@ function FiltersBox({ value, onChange, options, loading }) {
 }
 
 function JobCard({ job }) {
-
   const title = job.title ?? job.jp_title ?? job.job_title ?? "제목 없음";
   const company = job.company ?? job.jp_company ?? job.company_name ?? "회사";
   const location = job.location ?? job.jp_location ?? "지역";
@@ -200,14 +208,15 @@ export default function CustomPage() {
   const visibleJobs = useMemo(() => jobs.slice(0, 4), [jobs]);
   const showResults = hasSearched;
 
-
-  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+  // ✅ QuestionPage처럼 "절대주소"로 고정
+  const API_BASE = "http://localhost:3000";
 
   const fetchJson = async (path, init) => {
     const res = await fetch(`${API_BASE}${path}`, {
       credentials: "include",
       ...init,
     });
+
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(text || `Request failed: ${res.status}`);
@@ -215,7 +224,7 @@ export default function CustomPage() {
     return res.json();
   };
 
-
+  // 1) 페이지 로딩 시 옵션 불러오기
   useEffect(() => {
     let ignore = false;
 
@@ -249,10 +258,10 @@ export default function CustomPage() {
     return () => {
       ignore = true;
     };
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  //직업별
+  // 2) 직업별 바뀌면 직무 목록 불러오기
   useEffect(() => {
     let ignore = false;
 
@@ -267,6 +276,7 @@ export default function CustomPage() {
         const data = await fetchJson(
           `/api/custom/jobs?jc_code=${encodeURIComponent(filters.jc_code)}`
         );
+
         if (ignore) return;
 
         setOptions((prev) => ({
@@ -288,10 +298,9 @@ export default function CustomPage() {
     };
   }, [filters.jc_code]);
 
-  //공고 찾기
+  // 3) 공고 찾기
   const onSearch = async () => {
     setHasSearched(true);
-
 
     if (!pickedFile) {
       alert("자기소개서를 업로드해 주세요.");
@@ -306,6 +315,7 @@ export default function CustomPage() {
     setIsLoading(true);
 
     try {
+      // ✅ 설치 없이 진행하려고 JSON으로 보냄
       const data = await fetchJson("/api/custom/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -320,8 +330,6 @@ export default function CustomPage() {
       setJobs(Array.isArray(data.jobs) ? data.jobs : []);
     } catch (e) {
       console.error(e);
-
-
       setJobs(SAMPLE_JOBS.slice(0, 4));
     } finally {
       setIsLoading(false);
