@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import styled from "@emotion/styled"
 
-export default function QuestionPage() {
+export default function FeedbackPage() {
   // DB에서 받아올 직무 카테고리 목록
   const [jobOptions, setJobOptions] = useState([])
   const [jobLoading, setJobLoading] = useState(false)
@@ -12,9 +12,20 @@ export default function QuestionPage() {
 
   // 채용 공고 URL 입력
   const [url, setUrl] = useState("")
+  const [urlError, setUrlError] = useState("")
 
   // 자기소개서 텍스트 입력
   const [resume, setResume] = useState("")
+
+  // 업로드 상태/결과
+  const [uploadLoading, setUploadLoading] = useState(false)
+  const [uploadError, setUploadError] = useState("")
+  const [uploadedId, setUploadedId] = useState(null)
+
+  // 분석 시작
+  const [feedback, setFeedback] = useState("")
+  const [analysisLoading, setAnalysisLoading] = useState(false)
+  const [actionError, setActionError] = useState("")
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -23,8 +34,9 @@ export default function QuestionPage() {
         setJobError("")
 
         // TODO: 백엔드 주소에 맞게 수정
-        // 예: http://localhost:8000/api/job-categories
-        const res = await fetch("http://localhost:3000/job-categories")
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/job-categories`
+        )
 
         if (!res.ok) throw new Error("직무 목록을 불러오지 못했습니다.")
         const data = await res.json()
@@ -41,6 +53,125 @@ export default function QuestionPage() {
 
     fetchJobs()
   }, [])
+
+  // 업로드 버튼 클릭 핸들러 (job_resume 테이블 INSERT)
+  const handleUpload = async () => {
+    try {
+      setUploadError("")
+      setUploadedId(null)
+
+      if (!job) return setUploadError("직무 역할을 선택해주세요.")
+      const text = resume.trim()
+      if (text.length < 200)
+        return setUploadError("자기소개서는 최소 200자 이상 입력해주세요.")
+      if (text.length > 4000)
+        return setUploadError("최대 4000자까지 입력 가능합니다.")
+
+      setUploadLoading(true)
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/job-resumes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // 세션 쓰면 유지하는 게 안전
+        body: JSON.stringify({
+          jc_code: job,
+          jrs_text: text,
+          jrs_type: "text",
+        }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) return setUploadError(data?.error || "업로드 실패")
+
+      setUploadedId(data?.jrs_id ?? null)
+    } catch (e) {
+      setUploadError(e.message || "업로드 중 오류")
+    } finally {
+      setUploadLoading(false)
+    }
+  }
+
+  // 채용공고 URL 형식 체크 (http/https만 허용)
+  const isValidHttpUrl = (value) => {
+    const v = (value || "").trim()
+    if (!v) return false
+    try {
+      const u = new URL(v)
+      return u.protocol === "http:" || u.protocol === "https:"
+    } catch {
+      return false
+    }
+  }
+
+  const canAnalyze =
+    !!job &&
+    resume.trim().length >= 200 &&
+    resume.trim().length <= 4000 &&
+    isValidHttpUrl(url)
+
+  const handleUrlChange = (e) => {
+    setUrl(e.target.value)
+    if (urlError) setUrlError("")
+    if (actionError) setActionError("")
+  }
+
+  // 분석 시작 버튼 클릭 핸들러 ()
+  const handleAnalyze = async () => {
+    try {
+      setActionError("")
+      setUrlError("")
+      setFeedback("")
+
+      // validation
+      if (!job) return setActionError("직무 역할을 선택해주세요")
+
+      const urlText = (url || "").trim()
+
+      if (!urlText) {
+        setUrlError("채용공고 URL을 입력해주세요")
+        return
+      }
+      if (!isValidHttpUrl(urlText)) {
+        setActionError("채용공고 URL 형식이 올바르지 않습니다.")
+        return
+      }
+
+      const text = resume.trim()
+      if (text.length < 200)
+        return setActionError("자기소개서는 최소 200자 이상 입력해주세요.")
+      if (text.length > 4000)
+        return setActionError("최대 4000자까지 입력 가능합니다.")
+
+      setAnalysisLoading(true)
+
+      // 직무명(선택) - jobOptions에서 찾아서 같이 보냄
+      const selected = jobOptions.find((x) => String(x.jc_code) === String(job))
+      const jobName = selected?.jc_name || null
+
+      const res = await fetch(`${import.meta.env.VITE_AI_URL}/resume/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // 세션/쿠키 안 쓰면 credentials 없어도 됨
+        credentials: "include",
+        body: JSON.stringify({
+          jc_code: job,
+          job_name: jobName,
+          url: urlText,
+          resume_text: text,
+        }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok)
+        return setActionError(data?.detail || data?.error || "분석 실패")
+
+      setFeedback(data.feedback || "")
+    } catch (e) {
+      setActionError(e.message || "분석 중 오류가 발생했습니다.")
+    } finally {
+      setAnalysisLoading(false)
+    }
+  }
 
   return (
     <Page>
@@ -116,9 +247,11 @@ export default function QuestionPage() {
                   type="url"
                   placeholder="채용공고 URL"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={handleUrlChange}
                 />
               </InputWrap>
+
+              {urlError && <ErrorText>{urlError}</ErrorText>}
             </CardBody>
           </Card>
         </Side>
@@ -145,12 +278,37 @@ export default function QuestionPage() {
                 placeholder="여기에 자기소개서를 입력하세요."
                 value={resume}
                 onChange={(e) => setResume(e.target.value)}
+                disabled={uploadLoading}
               />
               <BottomRow>
                 <Count>{resume.length} / 4000</Count>
-                <UploadButton type="button">업로드</UploadButton>
-                <PrimaryButton type="button">분석 시작</PrimaryButton>
+
+                {/* 업로드 버튼에 onClick 연결 */}
+                <UploadButton
+                  type="button"
+                  onClick={handleUpload}
+                  disabled={uploadLoading}
+                >
+                  {uploadLoading ? "업로드 중..." : "업로드"}
+                </UploadButton>
+                <PrimaryButton
+                  type="button"
+                  onClick={handleAnalyze}
+                  disabled={analysisLoading}
+                  title={
+                    !canAnalyze
+                      ? "직무 선택, 채용공고 URL, 자기소개서(200~4000자)를 모두 입력해주세요."
+                      : ""
+                  }
+                >
+                  {analysisLoading ? "분석 중..." : "분석 시작"}
+                </PrimaryButton>
               </BottomRow>
+              {/* 업로드 에러/성공 표시 */}
+              {uploadError && <ErrorText>{uploadError}</ErrorText>}
+              {uploadedId && (
+                <SuccessText>업로드 완료! (id: {uploadedId})</SuccessText>
+              )}
             </CardBody>
           </Card>
 
@@ -166,7 +324,19 @@ export default function QuestionPage() {
               <Hint>
                 AI가 자기소개서 진단 후 피드백을 제공해주는 공간입니다.
               </Hint>
-              <FeedbackArea />
+              <FeedbackArea>
+                {analysisLoading ? (
+                  <FeedbackText>분석 중입니다...</FeedbackText>
+                ) : actionError ? (
+                  <FeedbackError>{actionError}</FeedbackError>
+                ) : feedback ? (
+                  <FeedbackText>{feedback}</FeedbackText>
+                ) : (
+                  <FeedbackPlaceholder>
+                    여기에 AI 피드백이 표시됩니다.
+                  </FeedbackPlaceholder>
+                )}
+              </FeedbackArea>
             </CardBody>
           </Card>
         </Main>
@@ -179,6 +349,12 @@ const ErrorText = styled.p`
   margin: 8px 0 0;
   font-size: 12px;
   color: #d63b52;
+`
+
+const SuccessText = styled.p`
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #1a7f37;
 `
 
 /* ---------------- styles ---------------- */
@@ -365,10 +541,41 @@ const UploadButton = styled.button`
   &:hover {
     opacity: 0.92;
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `
 
 const FeedbackArea = styled.div`
   height: 260px;
   border-radius: 12px;
   background: #f3f3f3;
+  overflow: auto; /* 내용 길면 스크롤 */
+`
+
+const FeedbackText = styled.pre`
+  margin: 0;
+  padding: 12px;
+  white-space: pre-wrap; /* 줄바꿈 유지 */
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #222;
+`
+
+const FeedbackPlaceholder = styled.p`
+  margin: 0;
+  padding: 12px;
+  font-size: 13px;
+  color: #888;
+`
+
+const FeedbackError = styled.p`
+  margin: 0;
+  padding: 12px;
+  font-size: 13px;
+  color: #d63b52;
+  font-weight: 700;
 `
