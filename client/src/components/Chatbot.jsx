@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "@emotion/styled";
-import { sendInterviewMessage } from "../api/chat";
+import { sendInterviewMessage, getInterviewHistory } from "../api/chat";
 
 export default function Chatbot({ startPayload, sessionId, disabled }) {
   const [input, setInput] = useState("");
@@ -16,6 +16,37 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const load = async () => {
+      if (!sessionId) return;
+      try {
+        const data = await getInterviewHistory({ sessionId });
+        if (ignore) return;
+
+        const history = data?.history || [];
+        // history -> UI messages 포맷으로 변환
+        const restored = history.map((h) => ({
+          id: crypto.randomUUID(),
+          role: h.role === "assistant" ? "assistant" : "user",
+          text: h.content,
+        }));
+
+        // 기존 messages가 비어있을 때만 복원 (중복 방지)
+        setMessages((prev) => (prev.length === 0 ? restored : prev));
+      } catch (e) {
+        // 세션이 만료(1시간 TTL)됐거나 없으면: 그냥 빈 상태 유지
+        // 필요하면 여기서 사용자에게 안내 메시지 추가 가능
+      }
+    };
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [sessionId]);
 
   // ✅ startPayload 도착 시 최초 안내 메시지 1회 삽입
   useEffect(() => {
@@ -36,6 +67,25 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
       ];
     });
   }, [startPayload]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const key = `interview.messages:${sessionId}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setMessages(parsed);
+      } catch {}
+    }
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const key = `interview.messages:${sessionId}`;
+    localStorage.setItem(key, JSON.stringify(messages));
+  }, [messages, sessionId]);
 
   const sendMessage = async () => {
     if (disabled) return;
