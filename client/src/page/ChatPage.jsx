@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { useRef, useState, useEffect } from "react";
 import Chatbot from "../components/Chatbot";
 import { startInterview, terminateInterview } from "../api/chat";
+import { getUuid } from "../api/sid";
 
 const LS_SESSION = "interview.sessionId";
 const LS_ACTIVE = "interview.active";
@@ -57,7 +58,7 @@ export default function ChatPage() {
       setIsLoading(true);
 
       // 새 인터뷰는 새 세션으로 시작
-      const newSessionId = crypto.randomUUID();
+      const newSessionId = await getUuid();
       setSessionId(newSessionId);
       localStorage.setItem(LS_SESSION, newSessionId);
 

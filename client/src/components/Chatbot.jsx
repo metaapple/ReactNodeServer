@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "@emotion/styled";
 import { sendInterviewMessage, getInterviewHistory } from "../api/chat";
+import { generateId } from "../api/uuid";
 
 export default function Chatbot({ startPayload, sessionId, disabled }) {
   const [input, setInput] = useState("");
@@ -30,7 +31,7 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
 
         const history = data?.history || [];
         const restored = history.map((h) => ({
-          id: crypto.randomUUID(),
+          id: generateId(),
           role: h.role === "assistant" ? "assistant" : "user",
           text: h.content,
           isPlaying: false,
@@ -59,7 +60,7 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
       if (prev.length > 0) return prev;
       return [
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           role: "assistant",
           text: readyText,
           isPlaying: false,
@@ -96,7 +97,7 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
       setMessages((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           role: "assistant",
           text: "세션이 없어요. 먼저 '채팅 시작'을 눌러주세요.",
           isPlaying: false,
@@ -105,8 +106,8 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
       return;
     }
 
-    const userMsgId = crypto.randomUUID();
-    const typingId = crypto.randomUUID();
+    const userMsgId = generateId();
+    const typingId = generateId();
 
     setMessages((prev) => [
       ...prev,
