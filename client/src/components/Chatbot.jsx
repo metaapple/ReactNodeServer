@@ -230,17 +230,18 @@ export default function Chatbot({ startPayload, sessionId, disabled }) {
               </span>
             ) : (
               <>
-                <BbContent>{m.text}</BbContent>
-
-                {m.role === "assistant" && (
-                  <SpeakButton
-                    onClick={() => speakText(m.text, m.id)}
-                    aria-label={m.isPlaying ? "음성 정지" : "음성 재생"}
-                    $isPlaying={m.isPlaying}
-                  >
-                    {m.isPlaying ? "⏹" : "▶️"}
-                  </SpeakButton>
-                )}
+                <BbContent>
+                  {m.text}
+                  {m.role === "assistant" && (
+                    <SpeakButton
+                      onClick={() => speakText(m.text, m.id)}
+                      aria-label={m.isPlaying ? "음성 정지" : "음성 재생"}
+                      $isPlaying={m.isPlaying}
+                    >
+                      {m.isPlaying ? "⏹" : "▶️"}
+                    </SpeakButton>
+                  )}
+                </BbContent>
               </>
             )}
           </Bubble>
@@ -349,12 +350,9 @@ const SpeakButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 18px;
   color: ${({ $isPlaying }) => ($isPlaying ? "#ff4d4f" : "inherit")};
   opacity: 0.7;
   transition: all 0.2s;
-  margin-top: auto;
-  padding: 4px;
 
   &:hover {
     opacity: 1;
